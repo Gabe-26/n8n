@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>n8n Chat Widget</title>
+</head>
+<body>
+  <!-- Chat Widget -->
+  <script>
+    // Paste your n8n chat widget script below:
+    https://zgta.app.n8n.cloud/webhook/183bf0ae-389b-4b89-a3b5-c4a3c12bcab7/chat
+  </script>
+</body>
+</html>
