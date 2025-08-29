@@ -1,0 +1,145 @@
+<script>
+(function(){
+  // Create the widget container
+  const style = document.createElement("style");
+  style.innerHTML = `
+    #chat-widget-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 350px;
+      height: 500px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    #chat-widget-header {
+      background: #854fff;
+      color: white;
+      padding: 16px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+    }
+    #chat-widget-body {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    #chat-widget-body p {
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      word-wrap: break-word;
+    }
+    #chat-widget-footer {
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      display: flex;
+      gap: 8px;
+    }
+    #chat-widget-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+    }
+    #chat-widget-send {
+      background: #854fff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #chat-widget-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #854fff;
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }`;
+  document.head.appendChild(style);
+
+  // Add button + widget
+  document.body.insertAdjacentHTML("beforeend", `
+    <button id="chat-widget-button">💬</button>
+    <div id="chat-widget-container">
+      <div id="chat-widget-header">
+        <span>Chat</span>
+        <button id="chat-close">✖</button>
+      </div>
+      <div id="chat-widget-body">
+        <p><strong>Hi 👋, how can we help?</strong></p>
+      </div>
+      <div id="chat-widget-footer">
+        <input type="text" id="chat-widget-input" placeholder="Type your message...">
+        <button id="chat-widget-send">Send</button>
+      </div>
+    </div>`);
+
+  // Config
+  const webhookURL = "https://zgta.app.n8n.cloud/webhook/14d0a45a-3338-4751-8a39-5a4ce99afcf7/chat";
+  const route = "general";
+
+  function getChatId(){
+    let id = sessionStorage.getItem("chatId");
+    if(!id){ id = "chat_" + Math.random().toString(36).substr(2,9); sessionStorage.setItem("chatId", id); }
+    return id;
+  }
+
+  // Events
+  const btn = document.getElementById("chat-widget-button");
+  const box = document.getElementById("chat-widget-container");
+  const close = document.getElementById("chat-close");
+  const send = document.getElementById("chat-widget-send");
+
+  btn.onclick = ()=>{ box.style.display="flex"; btn.style.display="none"; };
+  close.onclick = ()=>{ box.style.display="none"; btn.style.display="flex"; };
+
+  send.onclick = ()=>{
+    const input = document.getElementById("chat-widget-input");
+    const text = input.value.trim();
+    if(!text) return;
+    const chatBody = document.getElementById("chat-widget-body");
+
+    const userMsg = document.createElement("p");
+    userMsg.textContent = text;
+    userMsg.style.background="#f1f1f1"; userMsg.style.color="#333";
+    chatBody.appendChild(userMsg);
+
+    fetch(webhookURL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ chatId:getChatId(), message:text, route })
+    }).then(r=>r.json()).then(data=>{
+      const botMsg = document.createElement("p");
+      botMsg.textContent = data.output || "Sorry, I didn't understand that.";
+      botMsg.style.background="#854fff"; botMsg.style.color="#fff";
+      chatBody.appendChild(botMsg);
+    }).catch(e=>console.error(e));
+
+    input.value="";
+  };
+})();
+</script>
